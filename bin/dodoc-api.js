@@ -3,7 +3,7 @@ var fs = require('fs-extra');
 var slugg = require('slugg');
 var moment = require('moment');
 var parsedown = require('dodoc-parsedown');
-var sharp = require('sharp');
+var Jimp = require('jimp');
 
 var dodoc  = require('../dodoc');
 var dev = require('./dev-log');
@@ -202,18 +202,16 @@ var dodocAPI = (function() {
       dev.logverbose(`Now using sharp to create image from buffer to ${imagePath}`);
       imagePath += '.jpeg';
 
-      sharp(imageBufferData)
-        .rotate()
-        .withMetadata()
-        .background({r: 255, g: 255, b: 255})
-        .flatten()
-        .toFormat(sharp.format.jpeg)
-        .quality(100)
-        .toFile(imagePath, function(err, info) {
-          dev.logverbose('Image has been saved, resolving its path.');
-          resolve(imagePath);
+      Jimp.read(imageBufferData, function(err, image) {
+        if (err) reject(err);
+        image
+          .quality(90)
+          .write(imagePath, function(err, info) {
+            if (err) reject(err);
+            dev.logverbose('Image has been saved, resolving its path.');
+            resolve(imagePath);
+          });
         });
-
     });
   }
 
@@ -222,18 +220,17 @@ var dodocAPI = (function() {
     return new Promise(function(resolve, reject) {
       dev.logverbose(`Making a thumb for ${source} at dest ${dest}`);
 
-      sharp(source)
-        .rotate()
-        .resize(dodoc.settings().mediaThumbWidth, dodoc.settings().mediaThumbHeight)
-        .max()
-        .withoutEnlargement()
-        .withMetadata()
-        .toFormat('jpeg')
-        .quality(dodoc.settings().mediaThumbQuality)
-        .toFile(dest)
-        .then(function() {
-          resolve();
-        });
+      Jimp.read(source, function(err, image) {
+        if (err) reject(err);
+        image
+          .quality(dodoc.settings().mediaThumbQuality)
+          .scaleToFit(dodoc.settings().mediaThumbWidth, dodoc.settings().mediaThumbHeight)
+          .write(dest, function(err, info) {
+            if (err) reject(err);
+            dev.logverbose('Image has been saved, resolving its path.');
+            resolve();
+          });
+      });
     });
   }
 
