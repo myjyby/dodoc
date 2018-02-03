@@ -22,7 +22,16 @@ body,html {
   height: auto;
 }
 
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 10px;
+}
 
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color:   $c-gris;
+  -webkit-box-shadow: $c-gris_fonce;
+}
 
 
 /******************
@@ -189,7 +198,7 @@ button {
     background-color: $c-bleuvert;
     color: white;
   }
-  &_close {
+  &_close, &_help {
     background-color: $c-noir;
     color: $c-gris_clair;
     &:hover, &:focus {
@@ -230,6 +239,7 @@ button {
 
   .btn {
     float:left;
+    pointer-events: none;
   }
 
   .btn.icon {
@@ -239,7 +249,6 @@ button {
   .btn.icon + span {
     left: 54px;
     width:  185px;
-
   }
 
 
@@ -253,8 +262,9 @@ button {
     -o-transform: translate(0,-50%);
     transform: translate(0,-50%);
 
+    // to make sur click is registered to button
+    pointer-events: none;
   }
-
 }
 
 
@@ -303,8 +313,12 @@ button {
   align-items: baseline;
   justify-content: space-around;
 
+  p {
+    margin: .5em 0;
+  }
+
   a {
-    border-bottom: .1em solid currentcolor;
+    text-decoration: underline;
     &:hover {
       color: $c-rouge;
     }
@@ -316,7 +330,7 @@ button {
   }
   // this is to make the info inside bibli-buffer fit the available width
   body.bibli[data-publicationpane="open"] & {
-      width: 50%;
+    width: 50%;
   }
 
   .module_infos-blocs {
@@ -326,6 +340,10 @@ button {
 
     background-color: rgba(217, 217, 217, 0.38);
     flex-shrink: 0;
+
+    a {
+      @extend .txt-wrap_long_lines;
+    }
   }
 
   .moveDodocContentFolder {
@@ -374,6 +392,7 @@ button {
 .insidePadding {
   padding: 0 16px;
 }
+
 
 // MEDIA only in lists (project page, bibli but not publi)
 .grille_de_medias {
@@ -446,10 +465,11 @@ button {
       background-color: #fff;
 
       .mediaData--informations {
-        padding: 0 $t-margin/2;
-        margin: 0;
-        font-size: 80%;
-        background-color: #fff;
+        padding-left: $t-margin/2;
+        padding-right: $t-margin/2;
+
+        margin-top: 0;
+        margin-bottom: 0;
 
         overflow: hidden;
         display: -webkit-box;
@@ -667,8 +687,6 @@ button {
 
 // text medias style
 .mediaContent--textOfTextmedia {
-  font-size:1rem;
-
   >*:first-child {
     margin-top: 0;
   }
@@ -698,7 +716,9 @@ button {
   h2 {
     padding-bottom: 0.3em;
     font-size: 1.5em;
-    border-bottom: 1px solid $c-gris;
+    font-style: italic;
+    border-bottom: 0;
+//     border-bottom: 1px solid $c-gris;
   }
   h3 {
     font-size: 1.25em;
@@ -709,11 +729,11 @@ button {
 
 .template_container {
   position: relative;
-  max-width: 35rem;
-  margin: 0 auto;
+  max-width: 45rem;
+  margin: $t-margin*4 auto;
   background:   white;
 
-  .publi-title{
+  .publi-title {
     position: relative;
     display: block;
     float: left;
@@ -726,7 +746,6 @@ button {
     line-height: 1.6;
     margin: 0;
     z-index: 1;
-
   }
 
   .publi-btn {
@@ -741,15 +760,32 @@ button {
     }
   }
 
+  .publi_medias {
+    padding: 0 $t-margin;
+  }
+
   .media {
     position: relative;
-    margin-bottom:  $t-margin;
+    margin-top: $t-margin;
+    margin-bottom:$t-margin;
+
+    &:first-child {
+      margin-top: 0;
+    }
 
     .button-wrapper_deleteMedia {
       position: absolute;
       display: block;
       top:0;
       right: 0;
+    }
+
+    .mediaData--informations {
+      padding: 0;
+      margin: 0;
+      margin-top: $t-margin/2;
+      font-size: 90%;
+      background-color: #fff;
     }
 
   }

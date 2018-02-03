@@ -5,6 +5,8 @@ var fs = require('fs');
 var io = require('socket.io');
 var path = require('path');
 var dev = require('./bin/dev-log');
+var bodyParser = require('body-parser');
+var dodoc  = require('./dodoc');
 
 // var localtunnel = require('localtunnel');
 // var ngrok = require('ngrok');
@@ -52,7 +54,6 @@ module.exports = function(electronApp) {
   var io = require("socket.io").listen(server);
 
   var sockets = require('./sockets');
-  var expressSettings = require('./express-settings');
   var router = require('./router');
 
   var m = sockets.init(app, io, electronApp);
@@ -60,27 +61,32 @@ module.exports = function(electronApp) {
   /*
   * Server config
   */
-  expressSettings(app, express);
+  {
+    dev.logverbose('Starting express-settings');
+
+    app.set('port', electronApp.port); //Server's port number
+    app.set('views', path.join(__dirname, 'views')); //Specify the views folder
+    app.set('view engine', config.templateEngine); //View engine is Jade
+
+    app.use(express.static(global.pathToUserContent));
+    app.use(express.static(path.join(global.pathToUserContent, dodoc.settings().contentDirname)));
+    app.use(express.static(path.join(__dirname, 'client')));
+
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+  }
+
 
   /**
   * Server routing and io events
   */
   router(app, io, m);
 
-
   /**
-  * Start the http server at port and IP defined before
+  * Start the https server at port and IP defined before
   */
-
-  server.listen(
-    app.get("port"), function() {
-      dev.log(`Server up and running. Go to ${config.protocol}://${config.host}:${config.port}`);
-      dev.log(' ');
-
-      process.on('unhandledRejection', function(reason, p) {
-        dev.error("Unhandled Rejection at: Promise ", p, " reason: ", reason);
-          // application specific logging, throwing an error, or other logic here
-      });
-    }
-  );
+  server.listen(app.get('port'), function() {
+    dev.log(`Server up and running. Go to ${config.protocol}://${config.host}:${electronApp.port}`);
+    dev.log(' ');
+  });
 }

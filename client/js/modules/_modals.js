@@ -44,7 +44,12 @@ var modals = (function() {
         })
         .on('click', '.js--openModal_moveContentFolder', function() {
         		modals.createModal('moveContentFolder');
-        });
+        })
+      	  .on('click', '.js--openModal_showQR', function(){
+        		var completeURL = $(this).data('completeurl');
+      		  modals.createModal('showQR', completeURL);
+      	  })
+        ;
     },
 
     createModal : function(typeOfModal, d) {
@@ -74,18 +79,20 @@ var modals = (function() {
         $modal = _initAddTextModal($modal);
       } else if(typeOfModal === 'addLocalMedia') {
         $modal = _initAddLocalMediaModal($modal);
-      } else if(typeOfModal === 'noConnection') {
-        $modal = _initNoConnexionModal($modal, d);
-      } else if(typeOfModal === 'exportWebOnConnexion') {
-        $modal = _initExportWebOnConnexionModal($modal, d);
-      } else if(typeOfModal === 'exportWebBadFTP') {
-        $modal = _initExportWebBadFTPModal($modal);
+      } else if(typeOfModal === 'exportWebIsReady') {
+        $modal = _initExportWebIsReady($modal, d);
+      } else if(typeOfModal === 'uploadWebsiteViaFTP') {
+        $modal = _initUploadWebsiteViaFTP($modal, d);
       } else if(typeOfModal === 'confirmPdfExported') {
         $modal = _initConfirmPDFModal($modal,d);
       } else if(typeOfModal === 'moveContentFolder') {
         $modal = _initMoveContentFolderModal($modal);
       } else if(typeOfModal === 'publiHasBeenSentToFtp') {
         $modal = _initPubliHasBeenSentToFTPModal($modal, d);
+      } else if(typeOfModal === 'publiFailedToUpload') {
+        $modal = _initPubliFailedToUpload($modal, d);
+      } else if(typeOfModal === 'showQR') {
+        $modal = _initShowQR($modal, d);
       }
 
       $modal.on('click', function(e) {
@@ -314,6 +321,20 @@ var modals = (function() {
     return $m;
   }
 
+  function _initShowQR($m, url) {
+    var canvas = $m
+      .find('.js--qr')[0];
+
+    var qr = new QRious({
+      element: canvas,
+      value: url,
+      background: 'transparent',
+      size: 500
+    });
+
+    return $m;
+  }
+
   function _initEditMediaModal($m, mdata) {
 
     var $navNextMedia = $m.find('.js--big-mediaNav-next');
@@ -392,10 +413,14 @@ var modals = (function() {
   				break;
   			case dodoc.settings().projectTextsFoldername:
   				var $mediaItem = $(".js--templates .media-big_text").clone(false);
+
   				$mediaItem
   					.find('.js--textField')
   					  .val( mdata.originalText)
   					.end()
+          .find('.js--downloadThisMedia')
+            .attr('href', mdata.textFilePath)
+          .end()
   					;
   				break;
     	}
@@ -541,88 +566,126 @@ var modals = (function() {
     	var $filePicker = $m.find('.js--modal_inputfile');
     	var $label = $filePicker.next().find('span');
     	var labelVal = $label.text();
+    	var files;
 
-    	$filePicker.on( 'change', function(e)
-    	{
-    		var fileName = '';
-  			fileName = e.target.value.split('\\').pop();
-  			var fileData = e.originalEvent.target.files;
-    		if(fileName) {
-        $filePicker
-    			  .data('fileName', fileName)
-    			  .data('fileData', fileData)
-    			  ;
-    			$label
-  			    .html( fileName)
-          ;
+    	$filePicker.on( 'change', function(e) {
+  			files = e.originalEvent.target.files;
+
+      var fileNames = [];
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        fileNames.push(file.name);
+      }
+
+    		if(fileNames.length > 0) {
+    			$label.html(fileNames.join(', '));
     		} else {
-    			$filePicker
-    			  .data('fileName', '')
-    			  .data('fileData', '')
-    			  ;
-    			$label.html( labelVal);
+    			$label.innerHTML = labelVal;
     		}
     	});
 
     $m.find('.js--valider').on('click',function(){
       if(_checkAndHighlightEmptyRequiredFields($m)) return;
-      	var fileName = $filePicker.data( 'fileName');
-      	var fileData = $filePicker.data( 'fileData');
-      	//Images changed
 
-      	if( fileData !== undefined && fileData !== null){
-      		console.log('A file has been loaded');
-      		var f = fileData[0];
-      		var reader = new FileReader();
-      		reader.onload = function(evt){
-        		// check type of content
-        		console.log( fileName);
+      function readAndPreview(file) {
+        // Make sure `file.name` matches our extensions criteria
+        var reader = new FileReader();
+
+        reader.addEventListener("load", function () {
+          console.log('file.name ' + file.name);
+          var fileName = file.name;
+
         		fileName = fileName.toLowerCase();
+        		var mediaData;
           if(fileName.indexOf( ".jpg") !== -1 || fileName.indexOf( ".jpeg") !== -1 || fileName.indexOf( ".png") !== -1) {
-        			var mediaData = {
+        			mediaData = {
               "mediaType" : "photo",
-        				"mediaData" : evt.target.result
+        				"mediaData" : this.result
         		  };
         		} else if(fileName.indexOf( ".mp4") !== -1 ||  fileName.indexOf( ".webm") !== -1) {
-        			var mediaData = {
+        			mediaData = {
               "mediaType" : "video",
               "mediaData" : {
-                "videoData" : evt.target.result,
+                "videoData" : this.result,
               }
         		  }
-        		} else if(fileName.indexOf( ".mp3") !== -1 ||  fileName.indexOf( ".m4a") !== -1) {
-        			var mediaData = {
+        		} else if(fileName.indexOf( ".mp3") !== -1 ||  fileName.indexOf( ".m4a") !== -1 ||  fileName.indexOf( ".wav") !== -1) {
+        			mediaData = {
               "mediaType" : "audio",
               "mediaData" : {
-                "audioData" : evt.target.result,
+                "audioData" : this.result,
               }
         		  }
           }
-        		if( mediaData !== undefined)
-        		  sendData.createNewMedia( mediaData);
-      		};
-      		reader.readAsDataURL(f);
-      	}
+        		if(mediaData !== undefined) {
+          		console.log('Now sending file calle ' + fileName + ' with type ' + mediaData.mediaType);
+        		  sendData.createNewMedia(mediaData);
+          }
+
+        }, false);
+
+        reader.readAsDataURL(file);
+      }
+
+      if (files) {
+        [].forEach.call(files, readAndPreview);
+      }
+
       $m.trigger('close_that_modal');
-    });
+    	});
     return $m;
   }
 
-  function _initNoConnexionModal($m,d) {
-    $m.find('.js--publiFilesSavedAtPath').html(d.path);
-    $m.on('close_that_modal', function() {
-      location.reload();
-    });
+  function _initExportWebIsReady($m,d) {
+    var zipURL = d.publicationsFolderRelativePath + '.zip';
+    $m
+      .find('.js--exportedWebsiteZIPURL')
+        .attr('href', zipURL)
+        .attr('download', d.slugPubliName)
+      .end()
+      ;
+
+/*
+      .find('.js--publiFilesSavedAtPath')
+        .attr('href', d.pathToWebsiteFolder)
+        .html(d.pathToWebsiteFolder);
+*/
+
+    if(d.is_internetConnected) {
+      $m.find('.js--has_noInternet').remove();
+    } else {
+      $m.find('.js--has_internet').remove();
+    }
+
+    if($m.find('.js--uploadViaFTP').length > 0) {
+      $m.find('.js--uploadViaFTP').on('click', function(){
+
+        var modalData = {};
+
+        if(store.get('ftp') !== undefined){
+          var ftpInfo = store.get('ftp');
+          modalData = ftpInfo;
+        }
+        modalData.pathToWebsiteFolder = d.pathToWebsiteFolder;
+        modalData.dateOfExport = d.dateOfExport;
+        modalData.slugPubliName = d.slugPubliName;
+      	  modals.createModal('uploadWebsiteViaFTP',modalData);
+
+        $m.trigger('close_that_modal');
+
+      });
+    }
+
     return $m;
   }
 
-  function _initExportWebOnConnexionModal($m,d) {
+  function _initUploadWebsiteViaFTP($m,d) {
 
     $m.find('input.host').val(d.host);
     $m.find('input.user').val(d.user);
     $m.find('input.pass').val(d.pass);
     $m.find('input.baseURL').val( d.baseURL);
-    $m.find('input.folder').val(d.dossierFtp);
+    $m.find('input.folder').val(d.sousDossierFtp);
 
     $m.find('.js--valider').on('click', function(){
       if(_checkAndHighlightEmptyRequiredFields($m)) return;
@@ -630,39 +693,34 @@ var modals = (function() {
       var user = $m.find('input.user').val();
       var pass = $m.find('input.pass').val();
       var baseURL = $m.find('input.baseURL').val();
-      var dossierFtp = $m.find('input.folder').val();
+      var sousDossierFtp = $m.find('input.folder').val();
 
-      store.set('ftp', {host,user,pass,baseURL,dossierFtp});
-      socket.emit('ftpSettings', {host,user,pass,baseURL,dossierFtp, "slugFolderName": currentFolder, "slugProjectName": currentProject, "slugPubliName": currentPubli, 'webPubliFolderPath': d.webPubliFolderPath, "images": d.arrayImages, "currentDate": d.date});
+      store.set('ftp', {
+        host: host,
+        user: user,
+        pass: pass,
+        baseURL: baseURL,
+        sousDossierFtp: sousDossierFtp
+      });
+
+//       socket.emit('ftpSettings', {host,user,pass,baseURL,sousDossierFtp, "slugFolderName": currentFolder, "slugProjectName": currentProject, "slugPubliName": currentPubli, 'webPubliFolderPath': d.webPubliFolderPath });
+
+      socket.emit('uploadViaFTP', {
+        FTPsettings:
+        {
+          host: host,
+          user: user,
+          pass: pass,
+          baseURL: baseURL
+        },
+        sousDossierFtp: sousDossierFtp,
+        pathToWebsiteFolder: d.pathToWebsiteFolder,
+        slugPubliName: d.slugPubliName,
+        dateOfExport: d.dateOfExport
+      });
 
       $('body').addClass('is--generating');
       $m.trigger('close_that_modal');
-    });
-    return $m;
-  }
-
-  function _initExportWebBadFTPModal($m) {
-    $m.on('close_that_modal', function() {
-//       $('#modal-connexion').foundation('reveal', 'open');
-    });
-    return $m;
-  }
-  function _initConfirmPDFModal($m, d) {
-    $m
-      .find('.js--exportedPDFPath')
-        .html(d.pdfPath)
-      .end()
-      .find('.js--exportedPDFURL')
-        .html(d.pdfURL)
-        .attr('href', d.pdfURL)
-        .attr('download', d.slugPubliName)
-      .end()
-      ;
-    return $m;
-  }
-  function _initMoveContentFolderModal($m) {
-    $m.find('.js--valider').on('click', function(){
-      socket.emit('removeUserDirPath');
     });
     return $m;
   }
@@ -672,6 +730,35 @@ var modals = (function() {
         .html(d.urlToPubli)
         .attr('href', d.urlToPubli)
         ;
+    return $m;
+  }
+
+  function _initPubliFailedToUpload($m, d) {
+    $m
+      .find('.js--ftpFailReason')
+        .html(d.reason)
+        ;
+    return $m;
+  }
+
+  function _initConfirmPDFModal($m, d) {
+    $m
+      .find('[data-set_href_as_PDF_URL]')
+        .attr('href', d.pdfURL)
+      .end()
+      .find('[data-set_download_as_publication_name]')
+        .attr('download', d.slugPubliName)
+      .end()
+      .find('[data-open_in_native_app]')
+        .attr('data-fullPath', d.pdfPath)
+      .end()
+      ;
+    return $m;
+  }
+  function _initMoveContentFolderModal($m) {
+    $m.find('.js--valider').on('click', function(){
+      socket.emit('removeUserDirPath');
+    });
     return $m;
   }
 

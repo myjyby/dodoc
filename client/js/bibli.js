@@ -1,6 +1,3 @@
-/* VARIABLES */
-var socket = io.connect();
-
 
 /* sockets */
 function onSocketConnect() {
@@ -27,6 +24,7 @@ socket.on('mediaUpdated', onMediaUpdated);
 socket.on('mediaRemoved', onMediaRemoved);
 
 socket.on('publiCreated', onPubliCreated);
+socket.on('publiRemoved', onPubliRemoved);
 
 socket.on('listOnePubliMetaAndMedias', onListOnePubliMetaAndMedias);
 socket.on('publiMetaUpdated', onPubliMetaUpdated);
@@ -45,8 +43,8 @@ function init(){
   publi.init();
 
 	$(".js--open_publicationspane").on( 'click', function(e) {
-  	e.preventDefault();
-  	$('body').attr( "data-publicationpane", $('body').attr('data-publicationPane') === 'open' ? '' : 'open');
+    	e.preventDefault();
+    	$('body').attr( "data-publicationpane", $('body').attr('data-publicationPane') === 'open' ? '' : 'open');
   });
 
   // si en arrivant sur la page, il y a un hash dans l'url
@@ -153,6 +151,15 @@ function onListOneProjectPublis( publisData) {
 function onPubliCreated(publisData){
   console.log( "onPubliCreated");
   onListOneProjectPublis( publisData);
+}
+
+function onRemoveOnePublis(publisData) {
+  removeThisPubli( $(".mainContent .montage-list ul"), publisData.slugPubliName);
+}
+
+function onPubliRemoved(publisData) {
+  console.log( "onPubliRemoved");
+  onRemoveOnePublis( publisData);
 }
 
 function onPubliMetaUpdated( psdata) {

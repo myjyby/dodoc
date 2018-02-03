@@ -1,12 +1,12 @@
 {
   "name": "dodoc",
-  "description": "Dodoc is a documentation tool for children",
+  "description": "Dodoc is an open-source documentation tool.",
   "main": "",
   "authors": [
-    "sarah garcin <sarah@g-u-i.me>"
+    "L’Atelier des Chercheurs <info@latelier-des-chercheurs.fr>"
   ],
-  "license": "MIT",
-  "homepage": "https://github.com/sarahgarcin/dodoc",
+  "license": "",
+  "homepage": "https://github.com/l-atelier-des-chercheurs/dodoc/",
   "moduleType": [
     "amd",
     "globals",
@@ -29,6 +29,7 @@
     "moment": "^2.12.0",
     "store-js": "store.js#^1.3.20",
     "jquery": "2.1.4",
-    "promise-polyfill": "^6.0.2"
+    "promise-polyfill": "^6.0.2",
+    "qrious": "^4.0.2"
   }
 }

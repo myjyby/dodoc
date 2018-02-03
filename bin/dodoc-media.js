@@ -87,7 +87,11 @@ var dodocMedia = (function() {
 
       var slugFolderName = newMediaData.slugFolderName;
       var slugProjectName = newMediaData.slugProjectName;
-      var newFileName = dodocAPI.getCurrentDate();
+
+      // adding a random string characters at the end, in case two medias get sent at the precise same moment
+      var randomCharacters = (Math.random().toString(36)+'00000000000000000').slice(2, 3 + 2);
+      var newFileName = dodocAPI.getCurrentDate() + randomCharacters;
+
       var newMediaType = newMediaData.mediaType;
 
       var mediaFolder = '';
@@ -274,12 +278,9 @@ var dodocMedia = (function() {
 
           fileExtension = '.md';
           var dataText = newMediaData.text;
-          dev.log( "Creating a new text media at path " + pathToFile + fileExtension + " with text : " + dataText);
+          dev.log(`Creating a new text media at path ${pathToFile}${fileExtension} with text : ${dataText}`);
 
-          var mediaData = {
-            "text" : dataText
-          };
-          dodocAPI.storeData(pathToFile + fileExtension, mediaData, "create").then(function( meta) {
+          dodocAPI.storeData(pathToFile + fileExtension, dataText, "create").then(function( meta) {
             _createMediaMeta( newMediaType, pathToFile, newFileName).then( function( mdata) {
               var textMediaData = _readTextMedia(pathToFile + fileExtension);
               mdata.textMediaContent = textMediaData;
@@ -366,11 +367,14 @@ var dodocMedia = (function() {
 
   function deleteOneMedia(slugFolderName, slugProjectName, mediaFolder, mediaName) {
     return new Promise(function(resolve, reject) {
+      dev.logfunction( "COMMON - deleteOneMedia : " + JSON.stringify({slugFolderName, slugProjectName, mediaFolder, mediaName}, null, 4));
       var pathToMediaFolder = _getMediaPath( slugFolderName, slugProjectName, mediaFolder);
       try {
         var filesInMediaFolder = fs.readdirSync( pathToMediaFolder);
+        dev.logverbose(`Looking for all files that start with ${mediaName}.`);
         filesInMediaFolder.forEach(function(filename) {
           var cleanMediaName = _getMediaFileNameFromFileName(filename);
+          dev.logverbose(`Current filename = ${filename} with cleanMediaName = ${cleanMediaName} `);
           if( cleanMediaName === mediaName) {
             var filePath = path.join( pathToMediaFolder, filename);
             var deletedFilePath = path.join( pathToMediaFolder, dodoc.settings().deletedPrefix + filename);
@@ -388,11 +392,11 @@ var dodocMedia = (function() {
         }
         resolve( mediaMetaData);
       } catch( err) {
+        dev.error(`Failed to read dir ${pathToMediaFolder}`);
         reject( err);
       }
     });
   }
-
 
   function _createThumbnails(videoPath, videoFilename, pathToMediaFolder){
     return new Promise(function(resolve, reject) {
@@ -447,10 +451,17 @@ var dodocMedia = (function() {
     return path.join( projectPath, mediasFolderPath, mediaName);
   }
   function _readTextMedia(textMediaPath) {
+    dev.logfunction(`COMMON — _readTextMedia for ${textMediaPath}`);
     var textMediaData = fs.readFileSync(textMediaPath, dodoc.settings().textEncoding);
     textMediaData = dodocAPI.parseData(textMediaData);
-    textMediaData.text_md = mm.parse(textMediaData.text).content;
-    return textMediaData;
+    dev.logverbose(`textMediaData = ${JSON.stringify(textMediaData, null, 4)}`);
+    let textContentToParse = textMediaData.hasOwnProperty('text') ? textMediaData.text : textMediaData.content;
+
+    let textInfos = {
+      text_md: mm.parse(textContentToParse).content,
+      text: textContentToParse
+    }
+    return textInfos;
   }
   function _listMediasOfOneType(slugFolderName, slugProjectName, mediasFolderPath, mediaName) {
     dev.logfunction( "COMMON — _listMediasOfOneType with " + JSON.stringify({slugFolderName, slugProjectName, mediasFolderPath, mediaName}));

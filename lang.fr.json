@@ -19,8 +19,10 @@
   "remove" : "Supprimer",
   "edit" : "Modifier",
   "accept" : "Valider",
-  "uploadPubliToFtp" : "Envoyer la publication vers un FTP",
-  "generatePDF" : "Exporter la publication en PDF",
+  "makeWebsite" : "Exporter en site web",
+  "makePDF" : "Exporter en PDF",
+
+  "uploadViaFTP": "Envoyer par FTP",
 
   "lastMediasAdded" : "Derniers médias ajoutés",
   "listOfPublications" : "Liste des publications",
@@ -32,10 +34,9 @@
   "status" : "état",
   "settings" : "Paramètres",
 
-  "editTitle" : "Éditer le titre",
   "createText" : "Créer du texte",
   "addLocalMedia" : "Importer un média",
-  "back" : "retour",
+  "back" : "Retour",
   "fullscreen" : "Plein écran",
   "quitFullscreen" : "Quitter le plein écran",
   "removeThisImage" : "Supprimer cette image",
@@ -52,7 +53,7 @@
   "thisFolderNameIsAlreadyTaken" : "Le nom de dossier suivant existe déjà&nbsp;: ",
   "pleaseUseAnother" : "Veuillez en utiliser un autre.",
 
-  "browserCantUserWebRTC" : "Attention ! Votre navigateur ne permet pas de capturer des photos et du son (Safari ou appareils Apple).\nUtilisez l’option d’import  de la page Bibliothèque (croix jaune) pour ajouter des photos, des vidéos et du son.",
+  "browserCantUserWebRTC" : "Attention ! Votre navigateur ne permet pas de capturer des photos et du son (Safari ou appareils Apple).\nUtilisez l’option d’import  de la page Bibliothèque (symbole +) pour ajouter des photos, des vidéos et du son.",
   "chooseCameraResolution" : "Sélectionnez la résolution de votre caméra",
   "customCameraResolution" : "Choississez une résolution",
   "backToAnimation" : "Retour à l’animation",
@@ -61,10 +62,12 @@
   "height" : "hauteur",
   "apply" : "appliquer",
 
+  "help" : "Aide",
   "removeProject" : "Supprimer le projet",
   "createFolder" : "Créer un dossier",
   "createProject" : "Créer un projet",
-  "show" : "afficher",
+  "show" : "Ouvrir",
+  "editPubli" : "Éditer la publication",
 
   "imageCount" : "Image ",
   "frameRate" : "Vitesse de lecture&nbsp;: ",
@@ -78,16 +81,17 @@
   "lastImageOpacity" : "Afficher la dernière image en transparence",
   "enableAudioInVideo" : "Enregistrer le son",
   "enableLogToFile" : "mode debug",
+  "toSuggestFeatures" : "Pour signaler des bugs ou suggérer des fonctionnalités, rendez-vous sur&nbsp;: ",
 
-  "creditADC" : "do•doc est un projet développé par l’Atelier des Chercheurs",
+  "creditADC" : "do•doc est un projet créé par l’Atelier des Chercheurs",
 
   "currentVideoResolutionIs" : "Résolution actuelle&nbsp;: ",
   "videoStreamCouldntBeStartedTryChangingRes" : "Le flux vidéo n’a pas pu être démarré.\nEssayez de modifier la résolution dans le panneau de droite.",
   "videoStreamNotAvailable" : "Erreur : le flux vidéo n’est pas disponible.",
   "audioStreamCouldntBeStarted" : "Le flux audio n’a pas pu être démarré.",
 
-  "mediapublitemplatesarestoredint" : "Les données chargées sur cette page sont stockées dans le dossier suivant&nbsp;: ",
-  "toconnectwithanotherdevice" : "Pour vous connecter depuis un autre appareil qui se trouve sur le même réseau wifi, naviguez vers l’adresse suivante (et ignorez l’avertissement qui s’affiche)&nbsp;: ",
+  "mediaPubliTemplatesAreStoredIn" : "Les données chargées sur cette page sont stockées dans le dossier suivant&nbsp;: ",
+  "toconnectwithanotherdevice" : "Pour vous connecter depuis un autre appareil qui se trouve sur le même réseau (Wifi ou Ethernet), naviguez vers l’adresse suivante et ignorez l’avertissement qui s’affiche&nbsp;: ",
   "clickHereToMoveContentFolder" : "Cliquez ici pour déplacer le dossier des contenus utilisateurs",
 
   "modal" : {
@@ -104,7 +108,8 @@
     "informations" : "Informations",
     "pathofmedia" : "Emplacement du média sur le disque dur&nbsp;:",
     "downloadThisMedia" : "Télécharger ce média",
-    "downloadThePDF" : "Téléchargez le PDF&nbsp;:",
+    "downloadThePDF" : "Téléchargez le PDF.",
+    "openThePDF" : "Ouvrir le PDF.",
 
     "editFolder" : "Modifier le dossier",
     "inprogress" : "En cours",
@@ -115,31 +120,38 @@
 
     "editProject" : "Modifier le projet",
     "pdfPublicationHasBeenSaved" : "La publication a bien été sauvegardée en PDF",
-    "impossibleToConnectToServer" : "Impossible de se connecter au serveur",
     "loginOrPassIsWrong" : "Mauvais login ou mot de passe",
-    "noInternetConnection" : "Pas de connexion internet",
-    "noInternetCantSendPublicationOverFtp" : "Vous n'êtes pas connecté à internet, vous ne pouvez donc pas envoyer votre publication en FTP.",
-    "yourFilesHaveBeenSaved" : "Vos fichiers web ont été sauvegardé&nbsp;:",
+
+    "yourWebsiteHasBeenSaved" : "Votre site a été exporté",
+    "downloadAZIP" : "Télécharger une archive ZIP.",
+    "noInternetConnection" : "<em>dodoc</em> n’a pas détecté de connexion internet, il n’est donc pas possible de partager cette publication par internet directement.",
     "sendFilesToAServer" : "Envoyer les fichiers vers un serveur",
     "publiHasBeenSentToServer" : "La publication a bien été transferrée au server",
     "clickHereToOpenPubliInAWebBrowser" : "Lien vers votre publication&nbsp;:",
 
+    "publiFailedToUpload": "L’envoi de la publication a échoué pour la raison suivante&nbsp;:",
+
+    "noInternetCantSendOverFtp": "Aucune connection à Internet n’a pu être trouvée, l’envoi en ligne n’est donc pas disponible.",
+    "hasInternetCanSendOverFtp": "Une connection à Internet a été détectée, voulez-vous envoyer cette publication en ligne par FTP&nbsp;?",
+
     "selectAnImage" : "Sélectionnez une image",
     "sureToRemoveProject" : "Êtes-vous sûr de vouloir supprimer le projet ?",
+    "sureToRemovePubli" : "Êtes-vous sûr de vouloir supprimer la publication ?",
 
     "newProject" : "Nouveau projet",
     "newPubli" : "Nouvelle publication",
-    "editPubli" : "Éditer la publication",
 
     "newMediaCreatedAtPath" : "Un nouveau média vient d’être créé dans le projet ",
     "newFolderCreatedWithName" : "Un nouveau dossier vient d’être créé avec pour nom ",
     "folderRemovedWithName" : "Le dossier suivant vient d’être supprimé&nbsp;: ",
+    "publiRemovedWithName" : "La publication suivante vient d’être supprimée&nbsp;: ",
     "newProjectCreatedWithName" : "Un nouveau projet vient d’être créé avec pour nom ",
     "projectRemovedWithName" : "Le projet suivant vient d’être supprimé&nbsp;: ",
     "atPath" : " dans le chemin ",
 
     "moveContentFolder" : "Déplacer le dossier <em>dodoc</em> sur votre disque dur",
-    "instructionsToMoveContentFolder" : "En cliquant sur le bouton ci-dessous, cette fenêtre fermera et au prochain lancement vous serez invité à sélectionner un nouvel emplacement pour stocker les médias, les publications exportées et les templates. Si un dossier nommé <em>dodoc</em> ne s'y trouve pas déjà, il sera créé."
-
+    "instructionsToMoveContentFolder" : "En cliquant sur le bouton ci-dessous, cette fenêtre fermera et au prochain lancement vous serez invité à sélectionner un nouvel emplacement pour stocker les médias, les publications exportées et les templates. Si un dossier nommé <em>dodoc</em> ne s'y trouve pas déjà, il sera créé.",
+    "qrcode" : "QR code",
+    "qrcodeinstructions" : "Flashez le avec un smartphone ou une tablette pour vous connecter à cette page depuis un appareil connecté au même réseau."
   }
 }

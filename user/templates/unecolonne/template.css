@@ -1,0 +1,11 @@
+.template_container {
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 0;
+}
+
+.template_container .publi_medias {
+}
+
+.template_container .publi_medias .media {
+}

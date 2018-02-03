@@ -6,6 +6,7 @@ html
 
     .navbar-container.is--opened
       header.navbar
+        +button('help', '', 'isCollapsed')
         +logo()
         +button('nouveauDossier')
 
@@ -20,6 +21,6 @@ html
       include templates/js_templates
 
     include templates/footer.jade
-    script(src='/js/index.js')
+    script(src='/js/index.js' defer)
 
 

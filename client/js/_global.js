@@ -1,6 +1,13 @@
 
 window.sessionId = '';
-window.socket = io.connect();
+
+
+if (window.navigator.userAgent.indexOf('Chrome') > -1) {
+  window.socket = io.connect({ transports: ['websocket','polling'] });
+} else {
+  // non-chrome browser are not very good at websocket so far (mid 2017), we better use polling
+  window.socket = io.connect({ transports: ['polling','websocket'] });
+}
 
 // context vars sent by Node via router.js to footer.jade namespaced with app
 var currentFolder = app.currentFolder;
@@ -56,6 +63,9 @@ socket.on("*",function(event,d) {
       var pathToProject = '/'+d.slugFolderName+'/'+d.slugProjectName;
       logs.push(dodoc.lang().modal.projectRemovedWithName+'<em>'+d.name+'</em>');
       break;
+    case "publiRemoved":
+      logs.push(dodoc.lang().modal.publiRemovedWithName+'<em>'+d.slugPubliName+'</em>');
+      break;
   }
 
   for(log in logs) {
@@ -67,16 +77,32 @@ socket.on("*",function(event,d) {
   }
 });
 
-$('body').on('click', '.js--openInBrowser', function() {
-  if(require('electron') !== undefined) {
+$('body').on('click', '.js--openInBrowser', function(e) {
+  console.log('Opening new link in browser');
+  var $target = $(e.target);
+  var thisHREF = $target.attr('href');
+  if(thisHREF !== undefined && require('electron') !== undefined) {
     var shell = require('electron').shell;
     event.preventDefault();
-    shell.openExternal(event.target.href);
+    shell.openExternal(thisHREF);
   }
 });
+
+$('body').on('click', '[data-open_in_native_app]', function(e) {
+  console.log('Opening in native app if available');
+  var $target = $(e.target);
+  var thisHREF = $target.attr('data-fullPath');
+  if(thisHREF !== undefined && require('electron') !== undefined) {
+    var shell = require('electron').shell;
+    event.preventDefault();
+    shell.openItem(thisHREF);
+  }
+});
+
 $('body').on('click', '.js--enableLogToFile', function() {
 	socket.emit('enableLogToFile');
 });
+
 $('body').on('click', '.js--openThisPathInFinder', function() {
   if(require('electron') !== undefined) {
     var shell = require('electron').shell;
@@ -93,7 +119,7 @@ function loadProjectSnippet(pd) {
     	$newSnippetProjet.find('.vignette-visuel img').remove();
 	}
 	$newSnippetProjet
-    .find( '.project-link').attr('href', pathToProject).end()
+    .find('[data-link_to_project]').attr('href', pathToProject).end()
     .find( 'h3').text( pd.name).end()
     .find( '.vignette-visuel img')
       .attr( 'src', pathToProject + "/" + pd.projectPreviewName)
@@ -163,25 +189,27 @@ function listAllMedias( mediasData) {
 function mediaInit( $m) {
   if( $('body').hasClass('publi') || Modernizr.touchevents) return;
 
-  var $v = $m.find('video');
-  $m.hover(function() {
-    if( $v.length > 0 && $v.get(0).paused) {
-      $v
-        .removeAttr('controls')
-        .get(0)
-          .play()
-        ;
-    }
-  }, function() {
-    if( $v.length > 0 && !$v.get(0).paused) {
-      $v
-        .attr('controls', true)
-        .get(0)
-          .pause()
-        ;
-      $v.get(0).currentTime = 0;
-    }
-  });
+  if($m.find('video').length > 0) {
+    var $v = $m.find('video');
+    $m.hover(function() {
+      if( $v.length > 0 && $v.get(0).paused) {
+        $v
+          .removeAttr('controls')
+          .get(0)
+            .play()
+          ;
+      }
+    }, function() {
+      if( $v.length > 0 && !$v.get(0).paused) {
+        $v
+          .attr('controls', true)
+          .get(0)
+            .pause()
+          ;
+        $v.get(0).currentTime = 0;
+      }
+    });
+  }
 }
 
 
@@ -262,7 +290,6 @@ function showImage( mediaDatas) {
 
 	return mediaItem;
 }
-
 
 function showAnimation( mediaDatas) {
   var mediasFilesPath = getMediaFiles(mediaDatas);
@@ -418,11 +445,26 @@ function removeThisProject( $container, slugProjectName) {
     })
     ;
 }
+
 function removeThisFolder( $container, slugFolderName) {
   var $items = $container.find(".dossier");
 
   var $itemToRemove = $items
     .filter(function() { return $(this).data('slugFolderName') === slugFolderName })
+    ;
+
+  $itemToRemove
+    .fadeOut( 400, function() {
+      $(this).remove();
+    })
+    ;
+}
+
+function removeThisPubli( $container, slugPubliName) {
+  var $items = $container.find(".publi-folder");
+
+  var $itemToRemove = $items
+    .filter(function() { return $(this).data('slugPubliName') === slugPubliName })
     ;
 
   $itemToRemove
@@ -464,7 +506,6 @@ function insertOrReplaceMedia( $mediaItem, $mediaContainer) {
   return "inserted";
 }
 
-
 function listPublis( publisData) {
   console.log( "listPublis");
 
@@ -472,7 +513,6 @@ function listPublis( publisData) {
   var lastPublis = publisData;
 
   $.each( lastPublis, function( publiSlug, publiContent) {
-
     var newPubli = makeOnePubli( publiContent);
     if( newPubli !== undefined)
       $allPublis = $allPublis.add( newPubli);
@@ -506,11 +546,20 @@ function makeOnePubli( publiData) {
 		.find('.js--edit_view')
 		  .attr('href', editPubliPath)
 		.end()
+    .find(".js--removePubli")
+      .on('click', function() {
+        if(window.confirm(dodoc.lang().modal.sureToRemovePubli)) {
+      		  sendData.removeOnePubli({
+          		"slugPubliName" : publiData.slugPubliName
+          });
+        }
+        return false;
+      })
+    .end()
     ;
 
   return $publiItem;
 }
-
 
 function insertOrReplacePubli( $publiItem, $publiContainer) {
 
@@ -547,108 +596,6 @@ function insertOrReplacePubli( $publiItem, $publiContainer) {
   return "inserted";
 }
 
-
-var publi = {
-  init : function( mediaData) {
-  	$('body')
-    	.on('click', '.js--edit_view', function(e){
-      	e.preventDefault();
-    		var $thisPubli = $(this).closest('.publi-folder');
-      publi.openPubli( $thisPubli);
-    	})
-
-    	.on('click', '.js--backButton', function(){
-  		  $('[data-publidata]')
-  		    .empty()
-  		    .hide()
-  		    ;
-  	  })
-    .on('click', '.js--delete-media-montage', function(e){
-      e.preventDefault();
-      	var $elementToDel = $(this).parent("li.media");
-      	// check if media is in the montage
-      	if( $elementToDel.closest('[data-publidata]').length > 0) {
-        	$elementToDel.fadeOut( 600,function(){
-        		$elementToDel.remove();
-            $(document).trigger( 'update_media_montage');
-        	});
-      }
-      return false;
-    })
-    ;
-
-    // a drag and drop has succeeded, let's scan publi_medias to parse all medias
-    // and send it to the right json
-    $(document).on( 'update_media_montage', function() {
-
-      var $montage = $('[data-publidata]');
-      var slugPubliName = $montage.data('publishown');
-      var $montageMedias = $montage.find('.media');
-
-      // listMediasPaths is a list of all the medias referenced by their json meta-file
-      var listMediasItems = [];
-      $montageMedias.each(function() {
-        $mma = $(this);
-        var mediakey = $mma.data('mediakey');
-        var mediaJson = {
-          "name" : mediakey
-        };
-        listMediasItems.push( mediaJson);
-      });
-
-      var publiJson = new Object();
-      publiJson.slugPubliName = slugPubliName;
-      publiJson.medias = listMediasItems;
-
-      // let's send it over to node so it is saved in the publication jsonfile
-      sendData.editPubliMedias( publiJson);
-    });
-
-  },
-
-  openPubli : function( $thisPubli) {
-
-    var $montageContainer = $('[data-publidata]');
-
-    // cloner un .montage-edit
-    var $montage = $(".js--templates .montage_publi").clone(false);
-    var pdata = $thisPubli.data();
-
-    $montageContainer
-      .attr("data-publishown", pdata.slugPubliName)
-      .data("publishown", pdata.slugPubliName)
-      ;
-
-    var publiData =
-    {
-      "slugPubliName" : pdata.slugPubliName
-    };
-
-    // le placer dans .montage-edit-container
-    $montageContainer
-      .html( $montage)
-      .show()
-      ;
-
-    // demander à récupérer les médias en full de la publi
-    sendData.listOnePubliMetaAndMedias( publiData);
-
-    $(document).trigger('restart_dragula');
-  },
-
-  makePubliMedias : function( listOfMediasToAdd) {
-    // publi medias are listed in an array (to respect order and make sure that 2 medias with same keys aren't removed)
-    // so we need to listAllMedias one by one
-    var $medias = $();
-    for( media of listOfMediasToAdd.medias) {
-      $medias = $medias.add( listAllMedias(media));
-    }
-    return $medias;
-  }
-
-}
-
-
 function updateMontagePubliMeta( psdata) {
 
   $.each( psdata, function( slugPubliName, pdata) {
@@ -673,7 +620,6 @@ function updateMontagePubliMedias( psdata) {
   });
 }
 
-
 // update montage content with new meta (title and link)
 function listMontagePubliMeta( $publiContent, pdata) {
   console.log('listMontagePubliMeta');
@@ -692,7 +638,7 @@ function listMontagePubliMeta( $publiContent, pdata) {
     ;
 
   // load the css file corresponding to this
-  var publiTemplateCSSPath = '/' + dodoc.settings().publicationTemplateDirname + '/' + pdata.template + '/' + 'style.css';
+  var publiTemplateCSSPath = '/' + dodoc.settings().publicationTemplateDirname + '/' + pdata.template + '/' + 'template.css';
   $('.publi_container,.montage_publi_container').find('#templateCss').attr('href', publiTemplateCSSPath);
 
   $publiContent.find('.template_container').attr("data-template", pdata.template);
@@ -763,10 +709,15 @@ var sendData = {
     publiData.slugProjectName = currentProject;
     	socket.emit( 'createPubli', publiData);
   },
-  editPubli : function( publiData) {
+  editPubli : function(publiData) {
     publiData.slugFolderName = currentFolder;
     publiData.slugProjectName = currentProject;
     	socket.emit( 'editPubli', publiData);
+  },
+  removeOnePubli : function(publiData) {
+    publiData.slugFolderName = currentFolder;
+    publiData.slugProjectName = currentProject;
+    	socket.emit('removeOnePubli', publiData);
   },
 
   listOnePubliMetaAndMedias : function( publiData) {
@@ -831,4 +782,103 @@ function getFirstMediaFromObj( mediasData) {
     return false;
   });
   return mediaData;
+}
+
+
+var publi = {
+  init : function( mediaData) {
+    	$('body')
+      	.on('click', '.js--edit_view', function(e){
+        	e.preventDefault();
+      		var $thisPubli = $(this).closest('.publi-folder');
+        publi.openPubli( $thisPubli);
+      	})
+      	.on('click', '.js--backButton', function(){
+    		  $('[data-publidata]')
+    		    .empty()
+    		    .hide()
+    		    ;
+    	  })
+      .on('click', '.js--delete-media-montage', function(e){
+        e.preventDefault();
+        	var $elementToDel = $(this).parent("li.media");
+        	// check if media is in the montage
+        	if( $elementToDel.closest('[data-publidata]').length > 0) {
+          	$elementToDel.fadeOut( 600,function(){
+          		$elementToDel.remove();
+              $(document).trigger( 'update_media_montage');
+          	});
+        }
+        return false;
+      })
+      ;
+
+    // a drag and drop has succeeded, let's scan publi_medias to parse all medias
+    // and send it to the right json
+    $(document).on('update_media_montage', function() {
+
+      var $montage = $('[data-publidata]');
+      var slugPubliName = $montage.data('publishown');
+      var $montageMedias = $montage.find('.media');
+
+      // listMediasPaths is a list of all the medias referenced by their json meta-file
+      var listMediasItems = [];
+      $montageMedias.each(function() {
+        $mma = $(this);
+        var mediakey = $mma.data('mediakey');
+        var mediaJson = {
+          "name" : mediakey
+        };
+        listMediasItems.push( mediaJson);
+      });
+
+      var publiJson = new Object();
+      publiJson.slugPubliName = slugPubliName;
+      publiJson.medias = listMediasItems;
+
+      // let's send it over to node so it is saved in the publication jsonfile
+      sendData.editPubliMedias( publiJson);
+    });
+
+  },
+
+  openPubli : function( $thisPubli) {
+
+    var $montageContainer = $('[data-publidata]');
+
+    // cloner un .montage-edit
+    var $montage = $(".js--templates .montage_publi").clone(false);
+    var pdata = $thisPubli.data();
+
+    $montageContainer
+      .attr("data-publishown", pdata.slugPubliName)
+      .data("publishown", pdata.slugPubliName)
+      ;
+
+    var publiData =
+    {
+      "slugPubliName" : pdata.slugPubliName
+    };
+
+    // le placer dans .montage-edit-container
+    $montageContainer
+      .html( $montage)
+      .show()
+      ;
+
+    // demander à récupérer les médias en full de la publi
+    sendData.listOnePubliMetaAndMedias( publiData);
+
+    $(document).trigger('restart_dragula');
+  },
+
+  makePubliMedias : function( listOfMediasToAdd) {
+    // publi medias are listed in an array (to respect order and make sure that 2 medias with same keys aren't removed)
+    // so we need to listAllMedias one by one
+    var $medias = $();
+    for( media of listOfMediasToAdd.medias) {
+      $medias = $medias.add( listAllMedias(media));
+    }
+    return $medias;
+  }
 }

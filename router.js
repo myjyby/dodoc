@@ -31,7 +31,7 @@ module.exports = function(app,io,m){
     return new Promise(function(resolve, reject) {
 
       var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-      dev.log('—> the following page has been requested : ' + fullUrl);
+      dev.log(`—> the following page has been requested : ${fullUrl}`);
 
       var pageDataJSON = [];
       pageDataJSON.contentDir = dodocAPI.getFolderPath();
@@ -84,11 +84,15 @@ module.exports = function(app,io,m){
       pageDataJSON.dodoc = dodoc;
       pageDataJSON.logToFile = global.nodeStorage.getItem('logToFile');
 
-      getLocalIP().then(function(localNetworkInfos) {
-        pageDataJSON.localNetworkInfos = localNetworkInfos;
+      getLocalIP().then((localNetworkInfos) => {
+        pageDataJSON.localNetworkInfos = {
+          ip: [],
+          port: global.appInfos.port
+        };
+        pageDataJSON.localNetworkInfos.ip = Object.values(localNetworkInfos);
         resolve(pageDataJSON);
       }, function(err, p) {
-        dev.error('Err ' + err);
+        dev.error(`Err while getting local IP: ${err}`);
         reject(err);
       });
     });
@@ -157,7 +161,7 @@ module.exports = function(app,io,m){
         generatePageDataJSON["templates"] = allTemplates;
         res.render("publi", generatePageDataJSON);
       }, function(err) {
-      dev.error('Err while listing templates for publi: ' + err);
+        dev.error('Err while listing templates for publi: ' + err);
       });
     }, function(err) {
       dev.error('Err while getting publi data: ' + err);

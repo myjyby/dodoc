@@ -1,6 +1,5 @@
 var path = require('path');
 var fs = require('fs-extra');
-var phantom = require('phantom');
 
 var dodoc  = require('../dodoc');
 
@@ -18,7 +17,7 @@ var publiPDF = (function() {
     return new Promise(function(resolve, reject) {
       dev.logfunction( "EVENT - exportPubliToPDF");
       createFolders(d).then(d => {
-        return _generatePDF(d)
+        return _makePDF(d)
       })
       .then(pdfInfos => {
         resolve(pdfInfos);
@@ -54,44 +53,39 @@ var publiPDF = (function() {
     });
   }
 
-  function _generatePDF(d){
+  function _makePDF(d){
     return new Promise(function(resolve, reject) {
 
       var pdfName = dodocAPI.getCurrentDate()+'.pdf';
       var pdfPath = path.join(d.printFolderPath, pdfName);
-      var pdfURL = path.join('/', d.relativePrintFolder, pdfName)
-      dev.logverbose('Will make phantom pdf');
+      var pdfURL = path.join('/', d.relativePrintFolder, pdfName);
 
-      phantom.create([
-        '--ignore-ssl-errors=yes',
-        '--ssl-protocol=any',
-        '--load-images=yes',
-        '--local-to-remote-url-access=yes',
-      ]).then(ph => {
-        dev.logverbose('phantom is created');
-        ph.createPage().then(page => {
-          dev.logverbose('page is created');
-          page.property('paperSize', { format: "A4", orientation: 'portrait', margin: '1cm' });
-          page.on('onLoadFinished', function(success) {
-            if(success === success) {
-              page.render(pdfPath);
-              ph.exit();
-              dev.logverbose(">> Render complete")
+      dev.logverbose('Will make pdf');
+
+      const {BrowserWindow} = require('electron')
+
+      let win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        show: false
+      });
+      win.loadURL(d.url)
+
+      win.webContents.on('did-finish-load', () => {
+        // Use default printing options
+        setTimeout(() => {
+          win.webContents.printToPDF({
+            marginsType: 0,
+            pageSize: 'A4',
+          }, (error, data) => {
+            if (error) throw error
+            fs.writeFile(pdfPath, data, (error) => {
+              if (error) throw error
+              console.log('Write PDF successfully.')
               resolve({ pdfURL, pdfPath });
-            } else {
-              dev.logverbose('fail');
-              reject();
-            }
+            });
           });
-          page.setContent(d.html, global.dodoc.homeURL);
-        }).catch(error => {
-          dev.error('Fail to createpage: ' + error);
-          reject();
-        });
-      })
-      .catch(error => {
-        dev.error('Fail to start phantomjs: ' + error);
-        reject();
+        }, 500);
       });
     });
   }

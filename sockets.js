@@ -11,7 +11,7 @@ var dodocMedia = require('./bin/dodoc-media');
 var dodocPubli = require('./bin/dodoc-publi');
 var dev = require('./bin/dev-log');
 
-var publiFTP = require('./bin/publi-ftp.js');
+var publiWebsite = require('./bin/publi-website.js');
 var publiPDF = require('./bin/publi-pdf.js');
 
 var sockets = (function() {
@@ -76,6 +76,7 @@ var sockets = (function() {
       socket.on( 'createPubli', onCreatePubli);
       socket.on( 'editMetaPubli', onEditMetaPubli);
       socket.on( 'editMediasPubli', onEditMediasPubli);
+      socket.on( 'removeOnePubli', onRemoveOnePubli);
 
       socket.on("editMediaMeta", onEditMediaMeta);
       socket.on("deleteMedia", onDeleteMedia);
@@ -83,9 +84,9 @@ var sockets = (function() {
 
   		  socket.on( 'listOnePubliMetaAndMedias', onListOnePubliMetaAndMedias);
 
-      socket.on( 'exportPubliToFtp', data => { onExportPubliToFtp(socket, data); });
-      socket.on( 'ftpSettings', data => { onFtpSettings(socket, data); });
-      socket.on( 'generatePDF', data => { onGeneratePDF(socket, data); });
+      socket.on( 'makeWebsite', data => { onMakeWebsiteFromPubli(socket, data); });
+      socket.on( 'uploadViaFTP', data => { onUploadViaFTP(socket, data); });
+      socket.on( 'makePDF', data => { onMakePDF(socket, data); });
 
       socket.on( 'enableLogToFile', onEnableLogToFile);
   	  });
@@ -400,6 +401,16 @@ var sockets = (function() {
     });
   }
 
+  function onRemoveOnePubli( publiData) {
+    dev.logfunction( "EVENT - onRemoveOnePubli");
+
+    dodocPubli.removeOnePubli(publiData).then(function(publiMetaData) {
+      dodocAPI.sendEventWithContent( 'publiRemoved', publiMetaData, io);
+    }, function(error) {
+      dev.error("Failed to remove a publi! Error: " + error);
+    });
+  }
+
   function onEditMetaPubli( publiData) {
     dev.logfunction( "EVENT - onEditMetaPubli");
 
@@ -450,26 +461,32 @@ var sockets = (function() {
     });
   }
 
-  function onExportPubliToFtp(socket, d) {
-    dev.logfunction( "EVENT - exportPubliToFtp : " + JSON.stringify( d, null, 4));
-    publiFTP.exportPubliToFtp(socket, d);
-  }
-
-  function onFtpSettings(socket, d) {
-    dev.logfunction( "EVENT - onFtpSettings : " + JSON.stringify( d, null, 4));
-    publiFTP.sendFileToServer(d).then(function(urlToPubli) {
-      dodocAPI.sendEventWithContent('publiTransferred', {urlToPubli}, io, socket);
+  function onMakeWebsiteFromPubli(socket, d) {
+    dev.logfunction( "EVENT - makeWebsite : " + JSON.stringify( d, null, 4));
+    publiWebsite.makeWebsite(d).then(additionalInfos => {
+      // additionalInfos contains is_internetConnected, pathToWebsiteFolder and dateOfExport
+      dodocAPI.sendEventWithContent( 'websiteReady', additionalInfos, io, socket);
     }, function(error) {
-      dodocAPI.sendEventWithContent('cannotConnectFtp', error, io, socket);
+      dev.error(`Failed to export publi as website! Error: ${error}`);
     });
   }
 
-  function onGeneratePDF(socket, d) {
+  function onUploadViaFTP(socket, d) {
+    dev.logfunction( "EVENT - onUploadViaFTP : " + JSON.stringify( d, null, 4));
+    publiWebsite.sendFilesToServerViaFTP(d).then(function(urlToPubli) {
+      dodocAPI.sendEventWithContent('publiTransferred', { urlToPubli }, io, socket);
+    }, function(error) {
+      dodocAPI.sendEventWithContent('failedToTransferPubli', { reason: error }, io, socket);
+    });
+  }
+
+  function onMakePDF(socket, d) {
+    dev.logfunction( "EVENT - onMakePDF : " + JSON.stringify( d, null, 4));
     publiPDF.exportPubliToPDF(d).then(function(pdfInfos) {
       pdfInfos.slugPubliName = d.slugPubliName;
       dodocAPI.sendEventWithContent( 'publiPDFIsGenerated', pdfInfos, io, socket);
     }, function(error) {
-      dodocAPI.sendEventWithContent( 'cannotGeneratePDF', error, io, socket);
+      dodocAPI.sendEventWithContent( 'cannotmakePDF', error, io, socket);
     });
   }
 

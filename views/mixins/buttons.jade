@@ -39,6 +39,12 @@ mixin button(typeOfButton, navOrButton, style)
     a(href="/#{slugFolderName}/#{slugProjectName}" title="Dodoc" class='button-wrapper_projet #{defaultClasses}')
       span #{projectName}
 
+  if( typeOfButton === 'help')
+    a(href="https://latelier-des-chercheurs.fr/docs/manuel-dodoc" class='button-wrapper_help js--openInBrowser #{defaultClasses}' target='_blank')
+      .btn.icon
+        include ../../client/images/i_help.svg
+      span !{dodoc.lang().help}
+
   if( typeOfButton === 'nouveauDossier')
     a(href="#" class='button-wrapper_add js--openModal_addFolder #{defaultClasses}')
       .btn.icon
@@ -88,16 +94,22 @@ mixin button(typeOfButton, navOrButton, style)
       span !{dodoc.lang().createPublication}
 
   if( typeOfButton === 'view_publication')
-    a(href="/#{slugFolderName}/#{slugProjectName}/publication" title="Dodoc publi" class='button-wrapper_view js--publiLink #{defaultClasses}' target="_blank")
+    a(href="/#{slugFolderName}/#{slugProjectName}/publication" title="View publication" class='button-wrapper_view js--publiLink #{defaultClasses}' target="_blank")
       .btn.icon
         include ../../client/images/i_view.svg
       span !{dodoc.lang().show}
 
   if( typeOfButton === 'edit_publication')
-    a(href="/#{slugFolderName}/#{slugProjectName}/publication" title="Dodoc publi" class='button-wrapper_edit js--edit_view #{defaultClasses}')
+    a(href="/#{slugFolderName}/#{slugProjectName}/publication" title="Edit publication" class='button-wrapper_edit js--edit_view #{defaultClasses}')
       .btn.icon
         include ../../client/images/i_pen.svg
       span !{dodoc.lang().edit}
+
+  if( typeOfButton === 'remove_publication')
+    a(href="#" title="Remove publication" class='button-wrapper_view js--removePubli #{defaultClasses}' target="_blank")
+      .btn.icon
+        include ../../client/images/i_clear.svg
+      span !{dodoc.lang().remove}
 
   if( typeOfButton === 'valider')
     a(href="#" title="Dodoc publi" class='button-wrapper_valider js--valider #{defaultClasses}')
@@ -105,23 +117,29 @@ mixin button(typeOfButton, navOrButton, style)
         include ../../client/images/i_enregistre.svg
       span !{dodoc.lang().accept}
 
-  if( typeOfButton === 'uploadPubliToFtp')
-    button(title="Dodoc upload publi" class='button-wrapper_upload js--uploadPubliToFtp #{defaultClasses}')
+  if( typeOfButton === 'makeWebsite')
+    button(title="Dodoc upload publi" class='button-wrapper_upload js--makeWebsite #{defaultClasses}')
       .btn.icon
         include ../../client/images/i_enregistre.svg
-      span !{dodoc.lang().uploadPubliToFtp}
+      span !{dodoc.lang().makeWebsite}
 
-  if( typeOfButton === 'generatePDF')
-    button(title="Dodoc pdf publi" class='button-wrapper_upload js--generatePDF #{defaultClasses}')
+  if( typeOfButton === 'makePDF')
+    button(title="Dodoc pdf publi" class='button-wrapper_upload js--makePDF #{defaultClasses}')
       .btn.icon
         include ../../client/images/i_enregistre.svg
-      span !{dodoc.lang().generatePDF}
+      span !{dodoc.lang().makePDF}
+
+  if( typeOfButton === 'uploadViaFTP')
+    button(title="Dodoc ftp upload" class='button-wrapper_upload js--uploadViaFTP js--has_internet #{defaultClasses}')
+      .btn.icon
+        include ../../client/images/i_enregistre.svg
+      span !{dodoc.lang().uploadViaFTP}
 
   if( typeOfButton === 'editPubli')
     a(href="#" title="Dodoc publi" class='button-wrapper_edit js--openModal_editPubli #{defaultClasses}')
       .btn.icon
         include ../../client/images/i_cog.svg
-      span !{dodoc.lang().editTitle}
+      span !{dodoc.lang().editPubli}
 
   if( typeOfButton === 'addText')
     a(href="#" title="Dodoc texte" class='button-wrapper_addText js--addText #{defaultClasses}')

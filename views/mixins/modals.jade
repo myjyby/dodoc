@@ -93,7 +93,7 @@ mixin modals(typeOfModal)
     .m_modal-content(data-pressEnterToSubmit)
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
-        | !{dodoc.lang().modal.editPubli}
+        | !{dodoc.lang().editPubli}
       form(onsubmit='return false;')
         input(type='text' class='js--modal_name' placeholder=dodoc.lang().name autofocus required)
         fieldset.templateSelector
@@ -110,13 +110,12 @@ mixin modals(typeOfModal)
 
   if( typeOfModal === 'addText')
     //////////////////////////////////////////////   ADD TEXT  //////////////////////////////////
-    .m_modal-content
+    .m_modal-content.is--limitedWidth
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
         | !{dodoc.lang().modal.addText}
-      form(onsubmit='return false;' class='add-text-form')
+      form(onsubmit='return false;' class='modal_addTextForm')
         textarea.mediaContent--textOfTextmedia.js--textField(placeholder="Ajouter du texte ici" autofocus required)
-        hr
         +button('valider', '', 'isCollapsed')
 
   if( typeOfModal === 'addLocalMedia')
@@ -126,7 +125,7 @@ mixin modals(typeOfModal)
       .modal_title.txt-large_title
         | !{dodoc.lang().modal.importAFile}
       form(onsubmit='return false;')
-        input(id="addLocalMediaInputFile" type="file" class="inputfile js--modal_inputfile inputfile-2" autofocus required)
+        input(id="addLocalMediaInputFile" type="file" multiple class="inputfile js--modal_inputfile inputfile-2" autofocus required)
         label(for="addLocalMediaInputFile")
           | <svg xmlns="" width="20" height="17" viewBox="0 0 20 17"><path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z"></path></svg>
           span
@@ -156,31 +155,38 @@ mixin modals(typeOfModal)
       hr
       +button('valider', '', 'isCollapsed')
 
-  if( typeOfModal === 'exportWebBadFTP')
-    //////////////////////////////////////////////   BAD PDF  //////////////////////////////////
+
+  if( typeOfModal === 'showQR')
+    //////////////////////////////////////////   SHOW QR  //////////////////////////////
     .m_modal-content
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
-        | !{dodoc.lang().modal.impossibleToConnectToServer}
+        | !{dodoc.lang().modal.qrcode}
       p
-        | !{dodoc.lang().modal.loginOrPassIsWrong}
+        | !{dodoc.lang().modal.qrcodeinstructions}
+      img.js--qr.modal--QR
 
-  if( typeOfModal === 'exportWebNoConnexion')
-    //- modal-no-connexion
-    //////////////////////////////////////////////   NO CONNEXION  //////////////////////////////////
+
+  if( typeOfModal === 'exportWebIsReady')
+    //////////////////////////////////////////////   WEBSITE READY  //////////////////////////////////
     .m_modal-content
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
-        | !{dodoc.lang().modal.noInternetConnection}
-      p
-        | !{dodoc.lang().modal.noInternetCantSendPublicationOverFtp}
-      p
-        | !{dodoc.lang().modal.yourFilesHaveBeenSaved}
-      p.js--publiFilesSavedAtPath
+        | !{dodoc.lang().modal.yourWebsiteHasBeenSaved}
+      a.txt-wrap_long_lines.js--exportedWebsiteZIPURL(href target="_blank" download="publication.zip")
+        | !{dodoc.lang().modal.downloadAZIP}
 
-  if( typeOfModal === 'exportWebOnConnexion')
+      hr
+
+      p.js--has_noInternet
+        | !{dodoc.lang().modal.noInternetCantSendOverFtp}
+      p.js--has_internet
+        | !{dodoc.lang().modal.hasInternetCanSendOverFtp}
+      +button('uploadViaFTP', '', '')
+
+  if( typeOfModal === 'uploadWebsiteViaFTP')
     //- modal-connexion
-    //////////////////////////////////////////////   CONNEXION  //////////////////////////////////
+    //////////////////////////////////////////////   UPLOAD TO FTP  //////////////////////////////////
     .m_modal-content(data-pressEnterToSubmit)
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
@@ -204,6 +210,16 @@ mixin modals(typeOfModal)
         | !{dodoc.lang().modal.clickHereToOpenPubliInAWebBrowser}
       a.urlToPubli.txt-wrap_long_lines.js--urlToPubli.js--openInBrowser(href target="_blank")
 
+  if( typeOfModal === 'publiFailedToUpload')
+    //////////////////////////////////////   PUBLI FAILED TO UPLOAD VIA FTP  //////////////////////////////////
+    .m_modal-content
+      +button( 'close', '', 'isCollapsed')
+      .modal_title.txt-large_title
+        | !{dodoc.lang().modal.publiFailedToUpload}
+      pre.js--ftpFailReason
+
+
+
   if( typeOfModal === 'confirmPdfExported')
     //- modal-confirm-pdf
     //////////////////////////////////////////////   CONFIRM PDF  //////////////////////////////////
@@ -211,7 +227,9 @@ mixin modals(typeOfModal)
       +button( 'close', '', 'isCollapsed')
       .modal_title.txt-large_title
         | !{dodoc.lang().modal.pdfPublicationHasBeenSaved}
-      .txt-small_info
+      a(data-set_href_as_PDF_URL data-set_download_as_publication_name href target="_blank" download="publication.pdf")
         | !{dodoc.lang().modal.downloadThePDF}
-      a.exportedPDFPath.txt-wrap_long_lines.js--exportedPDFURL(href target="_blank" download="publication.pdf")
+      br
+      a(data-set_href_as_PDF_URL data-open_in_native_app href target="_blank")
+        | !{dodoc.lang().modal.openThePDF}
 

@@ -1,5 +1,3 @@
-/* VARIABLES */
-var socket = io.connect();
 var currentTemplate;
 
 /* sockets */
@@ -23,10 +21,9 @@ socket.on('publiMetaUpdated', onPubliMetaUpdated);
 socket.on('publiMediasUpdated', onPubliMediasUpdated);
 
 socket.on('publiPDFIsGenerated', onPubliPDFIsGenerated);
-socket.on('noConnection', onNoConnection);
-socket.on('webConnectionFound', onWebConnection);
+socket.on('websiteReady', onWebsiteReady);
 socket.on('publiTransferred', onPubliTransferred);
-socket.on('cannotConnectFtp', onCannotConnectFtp);
+socket.on('failedToTransferPubli', onFailedToTransferPubli);
 
 
 
@@ -52,19 +49,16 @@ function onPubliMediasUpdated( psdata) {
   updateMontagePubliMedias( psdata);
 }
 function onPubliPDFIsGenerated(d) {
-  uploadPubliToFtp.onPubliPDFIsGenerated(d);
+  exportPubli.onPubliPDFIsGenerated(d);
+}
+function onWebsiteReady(d) {
+  exportPubli.onWebsiteReady(d);
 }
 function onPubliTransferred(d) {
-  uploadPubliToFtp.onPubliTransferred(d);
+  exportPubli.onPubliTransferred(d);
 }
-function onNoConnection(d) {
-  uploadPubliToFtp.onNoConnection(d);
-}
-function onWebConnection(webPubliFolderPath, arrayImages, date) {
-  uploadPubliToFtp.onWebConnection(webPubliFolderPath, arrayImages, date);
-}
-function onCannotConnectFtp() {
-  uploadPubliToFtp.onCannotConnectFtp();
+function onFailedToTransferPubli() {
+  exportPubli.onFailedToTransferPubli();
 }
 
 

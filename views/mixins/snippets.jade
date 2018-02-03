@@ -1,11 +1,11 @@
 mixin snippets(typeOfSnippet)
 
   if(typeOfSnippet === 'mediaForm')
-    //////////////////////////////////////////////   MEDIA FORM (inside bigmedia)  //////////////////////////////////
-    form(onsubmit='return false;' class='add-media-data lead')
+    ///////////////////////////////  MEDIA FORM (for all medias, inside bigmedia)  ///////////////////////
+    form(onsubmit='return false;' class='add-media-data')
       label
         | !{dodoc.lang().modal.informations}
-      textarea.mediaContent--textOfTextmedia.js--mediaInformations(type='text' autofocus)
+      textarea.mediaContent--textOfMedia.js--mediaInformations(type='text')
     h3.txt-small_info.margin-top_bottom
       span(style='display:none;') !{dodoc.lang().modal.pathofmedia}
       .js--mediaFullPath(style='display:none;')
@@ -18,13 +18,13 @@ mixin snippets(typeOfSnippet)
 
   if(typeOfSnippet === 'mediaForm_txt')
     //////////////////////////////////////////////   MEDIA FORM TEXT  //////////////////////////////////
-
-    form(onsubmit='return false;' class='add-media-text lead')
-      textarea.mediaContent--textOfTextmedia.js--textField(placeholder="Ajouter du texte ici" autofocus required)
+    form(onsubmit='return false;' class='add-media-text')
+      textarea.mediaContent--textOfTextmedia.js--textField(placeholder="Ajouter du texte ici" required)
     h3.txt-small_info
-      | !{dodoc.lang().modal.pathofmedia}
-      .js--mediaFullPath
+      span(style='display:none;') !{dodoc.lang().modal.pathofmedia}
+      .js--mediaFullPath(style='display:none;')
       a.js--downloadThisMedia(download)
+        | !{dodoc.lang().modal.downloadThisMedia}
     hr
     +button('favButton', '', '')
     +button('deleteMediaBibli', '', '')
@@ -34,33 +34,42 @@ mixin snippets(typeOfSnippet)
   if(typeOfSnippet === 'moduleInfos')
     .module_infos
       .module_infos-blocs
-        -for(var prop in localNetworkInfos)
-          -if(isHttps)
-            h3.txt-small_info
-              | !{dodoc.lang().toconnectwithanotherdevice}
-              a.js--openInBrowser(href="https://#{localNetworkInfos[prop]}:8080" target="_blank")
-                | https://#{localNetworkInfos[prop]}:8080
-          -else
-            h3.txt-small_info !{dodoc.lang().toconnectwithanotherdevice}
-              a.js--openInBrowser(href="http://#{localNetworkInfos[prop]}:8080" target="_blank")
-                | http://#{localNetworkInfos[prop]}:8080
+        p.txt-small_info
+          | !{dodoc.lang().toconnectwithanotherdevice}
+        ul
+        each ip in localNetworkInfos.ip
+          li.txt-small_info
+            - var completeURL = `https://${ip}:${localNetworkInfos.port}${url}`
+            a.txt-one_line_ellipsis.js--openInBrowser(href="#{completeURL}" target="_blank")
+              | •&nbsp;#{completeURL}
+            a.js--openModal_showQR(data-completeurl="#{completeURL}")
+              | <svg version="1.1"   x="0px" y="0px" width="30px" height="30px" viewBox="0 0 49.3 49.3" style="enable-background:new 0 0 49.3 49.3; display:inline-block;">
+              | <style type="text/css">.st0{fill:#232323;}</style>
+              | <path class="st0" d="M3.8,45.6H19H3.8L3.8,45.6z M7.6,34.2h7.6v7.6H7.6V34.2L7.6,34.2L7.6,34.2z M26.6,26.6h3.8v15.2h-3.8V26.6 L26.6,26.6L26.6,26.6z M0,49.3h22.8V26.6H0V49.3L0,49.3L0,49.3z M3.8,45.6V30.4H19v15.2L3.8,45.6L3.8,45.6L3.8,45.6z M26.6,45.6 h7.6v3.8h-7.6L26.6,45.6L26.6,45.6L26.6,45.6z M45.6,34.2h3.8V38h-3.8V34.2L45.6,34.2L45.6,34.2z M38,26.6h11.4v3.8H38V26.6 L38,26.6z M34.2,7.6h7.6v7.6h-7.6V7.6L34.2,7.6z M49.3,0H26.6v22.8h22.8V0L49.3,0L49.3,0z M45.6,19H30.4V3.8h15.2L45.6,19L45.6,19z M0,22.8h22.8V0H0V22.8L0,22.8z M3.8,3.8H19V19H3.8V3.8L3.8,3.8z M45.6,45.6H38v3.8h11.4v-7.6h-3.8V45.6L45.6,45.6L45.6,45.6z M34.2,34.2v7.6h7.6V38H38v-3.8H34.2L34.2,34.2L34.2,34.2z M7.6,7.6h7.6v7.6H7.6V7.6L7.6,7.6L7.6,7.6z"/>
+              | </svg>
       .module_infos-blocs
-        h3.txt-small_info
-          | !{dodoc.lang().mediapublitemplatesarestoredint}
-          div.txt-wrap_long_lines
-            a.js--openThisPathInFinder(href="#{currentUserDirPath}") #{ currentUserDirPath.replace(/\//g, '\/\u200B') }
-        a.txt-small_info.moveDodocContentFolder.do--hide_on_clients.js--openModal_moveContentFolder
-          | !{dodoc.lang().clickHereToMoveContentFolder}
+        p.txt-small_info
+          | !{dodoc.lang().mediaPubliTemplatesAreStoredIn}<br>
+          a.txt-wrap_long_lines.js--openThisPathInFinder(href="#{currentUserDirPath}") #{ currentUserDirPath.replace(/\//g, '\/\u200B') }
+        p.txt-small_info
+          a.moveDodocContentFolder.do--hide_on_clients.js--openModal_moveContentFolder
+            | !{dodoc.lang().clickHereToMoveContentFolder}
       .module_infos-blocs
-        - if(logToFile)
-          input.js--enableLogToFile(type="checkbox" id="enableLogToFile" checked)
-        - else
-          input.js--enableLogToFile(type="checkbox" id="enableLogToFile")
-        label.txt-small_info.checkbox--enableLogToFile.do--hide_on_clients(for="enableLogToFile")
-          | !{dodoc.lang().enableLogToFile}
+        p.txt-small_info
+          | !{dodoc.lang().toSuggestFeatures}
+          a.js--openInBrowser(href="https://github.com/l-atelier-des-chercheurs/dodoc/issues" target="_blank")
+            | github.com/l-atelier-des-chercheurs/dodoc/issues
+        p.txt-small_info
+          - if(logToFile)
+            input.js--enableLogToFile(type="checkbox" id="enableLogToFile" checked)
+          - else
+            input.js--enableLogToFile(type="checkbox" id="enableLogToFile")
+          label.checkbox--enableLogToFile.do--hide_on_clients(for="enableLogToFile")
+            | !{dodoc.lang().enableLogToFile}
       .module_infos-blocs
-        a.txt-small_info.creditADC.js--openInBrowser(href="http://latelier-des-chercheurs.fr/" target="_blank")
-          | !{dodoc.lang().creditADC}
+        p.txt-small_info
+          a.js--openInBrowser(href="https://latelier-des-chercheurs.fr/" target="_blank")
+            | !{dodoc.lang().creditADC}
       .module_infos-blocs
-        .txt-small_info
-          | do•doc v#{global.dodocVersion}
+        p.txt-small_info
+          | do•doc v#{global.appInfos.version}

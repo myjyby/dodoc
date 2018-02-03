@@ -54,8 +54,11 @@ var dodocAPI = (function() {
 
   function storeData(mpath, d, e) {
     return new Promise(function(resolve, reject) {
-      dev.logfunction('COMMON — storeData');
-      var textd = parsedown.textify(d);
+      dev.logfunction(`COMMON — storeData in ${mpath}`);
+      let textd;
+      if(typeof d === 'object') { textd = parsedown.textify(d); }
+      else { textd = d; }
+
       if( e === "create") {
         fs.appendFile( mpath, textd, function(err) {
           if (err) {
@@ -78,7 +81,7 @@ var dodocAPI = (function() {
   }
 
   function readMetaFile(metaFile){
-    var metaFileContent = fs.readFileSync( metaFile, 'utf8');
+    var metaFileContent = fs.readFileSync( metaFile, dodoc.settings().textEncoding);
     var metaFileContentParsed = parseData( metaFileContent);
     return metaFileContentParsed;
   }
@@ -199,13 +202,13 @@ var dodocAPI = (function() {
   // receives base64data and a path to filename (without ext)
   function makeImageFromData(imageBufferData, imagePath) {
     return new Promise(function(resolve, reject) {
-      dev.logverbose(`Now using sharp to create image from buffer to ${imagePath}`);
+      dev.logverbose(`Now using Jimp to create image from buffer to ${imagePath}`);
       imagePath += '.jpeg';
 
       Jimp.read(imageBufferData, function(err, image) {
         if (err) reject(err);
         image
-          .quality(90)
+          .quality(100)
           .write(imagePath, function(err, info) {
             if (err) reject(err);
             dev.logverbose('Image has been saved, resolving its path.');
