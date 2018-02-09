@@ -24,8 +24,8 @@
     "url": "https://github.com/l-atelier-des-chercheurs/dodoc/issues"
   },
   "build": {
-    "electronVersion": "1.8.1",
-    "appId": "dodoc",
+    "electronVersion": "1.8.2",
+    "appId": "do•doc",
     "asar": false,
     "mac": {
       "category": "public.app-category.education"
@@ -63,9 +63,9 @@
     "socket.io": "^2.0.4"
   },
   "devDependencies": {
-    "electron": "^1.8.1",
-    "electron-builder": "^19.55.3",
-    "electron-packager": "^10.1.2",
+    "electron": "^1.8.2",
+    "electron-builder": "^19.56.2",
+    "electron-packager": "^11.0.0",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.7.3",
     "gulp": "^3.9.1",
