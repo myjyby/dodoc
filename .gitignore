@@ -11,6 +11,8 @@ build/config.gypi
 user/publications/*
 !user/publications/readme.txt
 
+content/*
+
 # Compiled source #
 ###################
 *.com
