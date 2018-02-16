@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Menu, dialog} = require('electron');
+// const {app, BrowserWindow, Menu, dialog} = require('electron');
 
 const path = require('path');
 const fs = require('fs-extra');
@@ -15,8 +15,6 @@ var portscanner = require('portscanner');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-
-app.commandLine.appendSwitch('--ignore-certificate-errors');
 
 function createWindow() {
 
@@ -117,18 +115,10 @@ function createWindow() {
 
         app.server = server(app);
 
-        // and load the base url of the app.
-        win.loadURL(global.appInfos.homeURL);
-
-        if(dev.isDebug() || global.nodeStorage.getItem('logToFile')) {
-          win.webContents.openDevTools();
-        }
-
       })
     } catch (e) {
       dev.error('Couldn’t load app:', e);
     }
-
 
     // Emitted when the window is closed.
     win.on('closed', () => {
@@ -169,133 +159,6 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-function setApplicationMenu() {
-  // Create the Application's main menu
-  var template = [{
-    label: 'do•doc',
-    submenu: [
-      {
-        label: 'About do•doc',
-        selector: 'orderFrontStandardAboutPanel:'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Services',
-        submenu: []
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Hide do•doc',
-        accelerator: 'Command+H',
-        selector: 'hide:'
-      },
-      {
-        label: 'Hide Others',
-        accelerator: 'Command+Shift+H',
-        selector: 'hideOtherApplications:'
-      },
-      {
-        label: 'Show All',
-        selector: 'unhideAllApplications:'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Quit',
-        accelerator: 'Command+Q',
-        click: function() { app.quit(); }
-      },
-    ]
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      {
-        label: 'Undo',
-        accelerator: 'Command+Z',
-        selector: 'undo:'
-      },
-      {
-        label: 'Redo',
-        accelerator: 'Shift+Command+Z',
-        selector: 'redo:'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Cut',
-        accelerator: 'Command+X',
-        selector: 'cut:'
-      },
-      {
-        label: 'Copy',
-        accelerator: 'Command+C',
-        selector: 'copy:'
-      },
-      {
-        label: 'Paste',
-        accelerator: 'Command+V',
-        selector: 'paste:'
-      },
-      {
-        label: 'Select All',
-        accelerator: 'Command+A',
-        selector: 'selectAll:'
-      },
-    ]
-  },
-  {
-    label: 'View',
-    submenu: [
-      {
-        label: 'Reload',
-        accelerator: 'Command+R',
-        click: function() { BrowserWindow.getFocusedWindow().reload(); }
-      },
-      {
-        label: 'Toggle DevTools',
-        accelerator: 'Alt+Command+I',
-        click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
-      },
-    ]
-  },
-  {
-    label: 'Window',
-    submenu: [
-      {
-        label: 'Minimize',
-        accelerator: 'Command+M',
-        selector: 'performMiniaturize:'
-      },
-      {
-        label: 'Close',
-        accelerator: 'Command+W',
-        selector: 'performClose:'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Bring All to Front',
-        selector: 'arrangeInFront:'
-      },
-    ]
-  },
-  {
-    label: 'Help',
-    submenu: []
-  }];
-
-  menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-}
 
 function copyAndRenameUserFolder() {
   return new Promise(function(resolve, reject) {
