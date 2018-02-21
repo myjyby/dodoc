@@ -44,7 +44,12 @@ function init(){
     changeMediaMode(newMode);
   });
 
-  /******************************************************/
+  $('.js--modeSwitch').on('click', function(){
+    var direction = $(this).data('direction');
+    boitierExterne.switchMediaMode(direction);
+  });
+
+
   boitierExterne.init();
 
   currentStream.init()
